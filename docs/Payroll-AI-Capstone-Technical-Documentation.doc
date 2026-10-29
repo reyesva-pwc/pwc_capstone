@@ -1,0 +1,544 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Payroll AI Capstone - Technical Documentation</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+  @page Section1 { size: 8.5in 11.0in; margin: 1.0in 1.0in 1.0in 1.0in; }
+  div.Section1 { page: Section1; }
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #222222; line-height: 1.25; }
+  h1 { font-family: Calibri, Arial, sans-serif; font-size: 20pt; color: #2E3A59; border-bottom: 2px solid #7660CF; padding-bottom: 4pt; margin-top: 0; page-break-before: always; }
+  h1.first { page-break-before: auto; }
+  h2 { font-family: Calibri, Arial, sans-serif; font-size: 14pt; color: #2E3A59; margin-top: 16pt; margin-bottom: 4pt; }
+  h3 { font-family: Calibri, Arial, sans-serif; font-size: 12pt; color: #5B4BA8; margin-top: 12pt; margin-bottom: 3pt; }
+  p { margin-top: 3pt; margin-bottom: 6pt; }
+  table { border-collapse: collapse; width: 100%; margin-top: 6pt; margin-bottom: 10pt; }
+  th { background: #2E3A59; color: #FFFFFF; font-weight: bold; text-align: left; padding: 5pt; border: 1px solid #2E3A59; font-size: 10pt; }
+  td { padding: 5pt; border: 1px solid #BFC3D1; vertical-align: top; font-size: 10pt; }
+  tr.alt td { background: #F3F4F8; }
+  td.label { background: #E9E6F7; font-weight: bold; width: 22%; }
+  td.box { text-align: center; font-weight: bold; padding: 9pt; border: 2px solid #5B4BA8; background: #F3F0FC; }
+  td.boxgreen { text-align: center; font-weight: bold; padding: 9pt; border: 2px solid #2F7D5B; background: #EAF6F0; }
+  td.boxgrey { text-align: center; padding: 7pt; border: 1px solid #8A8DA0; background: #F5F5F7; font-size: 9.5pt; }
+  td.arrow { text-align: center; border: none; font-size: 14pt; color: #5B4BA8; padding: 2pt; }
+  .code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; background: #F3F4F8; }
+  .note { border-left: 4px solid #7660CF; background: #F3F0FC; padding: 6pt 10pt; margin: 8pt 0; }
+  .warn { border-left: 4px solid #C0733A; background: #FDF3EA; padding: 6pt 10pt; margin: 8pt 0; }
+  .title { font-size: 30pt; font-weight: bold; color: #2E3A59; margin-top: 150pt; margin-bottom: 4pt; }
+  .subtitle { font-size: 15pt; color: #5B4BA8; margin-bottom: 30pt; }
+  .meta { font-size: 11pt; color: #555555; }
+  ul, ol { margin-top: 2pt; margin-bottom: 6pt; }
+  li { margin-bottom: 2pt; }
+</style>
+</head>
+<body>
+<div class="Section1">
+
+<!-- ===================== TITLE PAGE ===================== -->
+<p class="title">Payroll AI Capstone</p>
+<p class="subtitle">Technical Documentation</p>
+<p class="meta">A microservice-based payroll workspace with AI-assisted review</p>
+<p class="meta">Version 1.0 &nbsp;|&nbsp; October 2026</p>
+<br><br>
+<table>
+  <tr><th colspan="2">Document contents</th></tr>
+  <tr><td class="label">1</td><td>What the system solves</td></tr>
+  <tr><td class="label">2</td><td>System overview and architecture</td></tr>
+  <tr><td class="label">3</td><td>System flow</td></tr>
+  <tr><td class="label">4</td><td>The microservices</td></tr>
+  <tr><td class="label">5</td><td>Roles and responsibilities of each component</td></tr>
+  <tr><td class="label">6</td><td>Technical stack</td></tr>
+  <tr><td class="label">7</td><td>Scope of the application</td></tr>
+  <tr><td class="label">8</td><td>Future enhancements</td></tr>
+  <tr><td class="label">9</td><td>Assumptions and known limitations</td></tr>
+  <tr><td class="label">A</td><td>Appendix: API endpoint summary</td></tr>
+</table>
+
+<!-- ===================== 1. WHAT THE SYSTEM SOLVES ===================== -->
+<h1>1. What the System Solves</h1>
+
+<p>Payroll is repetitive, rule-heavy work. When it is done from spreadsheets and ad-hoc files, three things tend to go wrong: employee data becomes inconsistent, calculations contain manual errors, and nobody notices an unusual result until after the money has been paid.</p>
+<p><b>Payroll AI Capstone</b> is a small payroll workspace that keeps employee records in one place, calculates monthly pay with Philippine statutory deductions, and uses AI to review the results and answer questions about the data.</p>
+
+<h2>1.1 Problems and how the system addresses them</h2>
+<table>
+  <tr><th style="width:34%">Problem</th><th>How the system addresses it</th></tr>
+  <tr><td>Employee data is scattered and entered inconsistently.</td><td>A central employee directory, owned by one service, validates every record: a clean name, allowed positions, a unique company e-mail address (<span class="code">@pwc.com</span>), a Philippine contact number (<span class="code">+63</span> followed by 10 digits) and a salary with at most two decimals that fits the position.</td></tr>
+  <tr class="alt"><td>Pay is calculated by hand and errors creep in.</td><td>The system calculates hourly rate, overtime, gross pay, deductions and net pay automatically and repeatably, and stores the result.</td></tr>
+  <tr><td>Philippine statutory deductions are complicated to apply.</td><td>It computes SSS, PhilHealth and Pag-IBIG contributions and BIR withholding tax, then shows an itemised payslip.</td></tr>
+  <tr class="alt"><td>The same employee can be paid twice for a month.</td><td>The system allows only one payroll run per employee per month. Saves are queued so two simultaneous requests cannot both succeed.</td></tr>
+  <tr><td>Unusual payroll results go unnoticed.</td><td>Every saved run can be reviewed by three fixed rules plus an OpenAI check. Each record is marked <i>normal</i> or <i>review</i> with a short reason.</td></tr>
+  <tr class="alt"><td>Anyone could open the application and change payroll data.</td><td>Users sign in with a company e-mail and password. Accounts have a role: <i>admin</i> (can add and delete employees, run payroll, change photos) or <i>member</i> (read-only, plus the AI review and chat). The sign-in token is a signed JWT, and every service checks its signature on every request.</td></tr>
+  <tr><td>Finding an answer means digging through screens and files.</td><td>A chat assistant answers questions in plain English, using only the current employee and payroll data.</td></tr>
+  <tr><td>Employee photos are kept in uncontrolled places.</td><td>Photos are stored in a private AWS S3 bucket and displayed through links that expire after five minutes.</td></tr>
+</table>
+
+<h2>1.2 Intended users</h2>
+<ul>
+  <li><b>Payroll officer / HR administrator (role: admin)</b> - maintains employees, runs payroll, manages photos, reviews payslips and flagged records.</li>
+  <li><b>Reviewer / manager (role: member)</b> - signs up with a company e-mail, views employees and payroll history, and uses the AI review and the chat assistant to check results quickly. Cannot change data.</li>
+</ul>
+
+<!-- ===================== 2. SYSTEM OVERVIEW ===================== -->
+<h1>2. System Overview and Architecture</h1>
+
+<p>The application is split into <b>three backend microservices</b> and a <b>React front end</b>. Each microservice does one job, owns its own data and talks to the others over HTTP using JSON. The services are written in three different languages on purpose: they only need to agree on the messages they exchange, not on the technology inside.</p>
+
+<h2>2.1 Architecture diagram</h2>
+<table>
+  <tr><td colspan="5" class="box">Browser - React front end (Vite) &nbsp;|&nbsp; http://localhost:5173</td></tr>
+  <tr><td class="arrow">&#9650;&#9660;</td><td class="arrow"></td><td class="arrow">&#9650;&#9660;</td><td class="arrow"></td><td class="arrow">&#9650;&#9660;</td></tr>
+  <tr>
+    <td class="boxgreen" style="width:30%">employee-service<br>Java / Spring Boot<br>port 8081</td>
+    <td class="arrow" style="width:5%">&#9668;&#9658;</td>
+    <td class="boxgreen" style="width:30%">payroll-service<br>Node.js / Express<br>port 3001</td>
+    <td class="arrow" style="width:5%"></td>
+    <td class="boxgreen" style="width:30%">ai-service<br>Python / FastAPI<br>port 8000</td>
+  </tr>
+  <tr><td class="arrow">&#9660;</td><td class="arrow"></td><td class="arrow">&#9660;</td><td class="arrow"></td><td class="arrow">&#9660;</td></tr>
+  <tr>
+    <td class="boxgrey">H2 in-memory database<br>(employees)</td>
+    <td class="boxgrey" style="border:none;background:#FFFFFF"></td>
+    <td class="boxgrey">payroll-runs.json (payroll history)<br>AWS S3 bucket (employee photos)</td>
+    <td class="boxgrey" style="border:none;background:#FFFFFF"></td>
+    <td class="boxgrey">OpenAI API<br>(review and chat)</td>
+  </tr>
+</table>
+<p style="font-size:9.5pt;color:#555555">The ai-service additionally reads live data from employee-service and payroll-service (for the chat). That connection is listed in the table below to keep the diagram readable.</p>
+
+<h2>2.2 Connections between components</h2>
+<table>
+  <tr><th style="width:32%">From &rarr; To</th><th>Purpose</th></tr>
+  <tr><td>Browser &rarr; employee-service</td><td>List, add and delete employees.</td></tr>
+  <tr class="alt"><td>Browser &rarr; payroll-service</td><td>Run payroll, read payroll history, upload and view employee photos, check AWS status.</td></tr>
+  <tr><td>Browser &rarr; ai-service</td><td>Analyze payroll history; send chat questions.</td></tr>
+  <tr class="alt"><td>payroll-service &rarr; employee-service</td><td>Look up an employee's name, code and salary when running payroll or saving a photo.</td></tr>
+  <tr><td>payroll-service &rarr; AWS S3</td><td>Store, list, sign and delete employee photos.</td></tr>
+  <tr class="alt"><td>ai-service &rarr; employee-service and payroll-service</td><td>Load the current employees and payroll runs so chat answers come from live data.</td></tr>
+  <tr><td>ai-service &rarr; OpenAI</td><td>Review payroll records; generate chat answers.</td></tr>
+</table>
+
+<h2>2.3 Layered design inside each service</h2>
+<p>Every backend follows the same layering. A request flows down through the layers and the response flows back up, and each layer only talks to the one below it.</p>
+<table>
+  <tr><th>Layer</th><th>Job</th><th>Java</th><th>Node.js</th><th>Python</th></tr>
+  <tr><td>Entry point</td><td>Receives HTTP, returns status codes</td><td>controller</td><td>routes + controllers</td><td>api</td></tr>
+  <tr class="alt"><td>Business rules</td><td>Validation and calculations</td><td>service</td><td>services</td><td>services</td></tr>
+  <tr><td>Data access</td><td>Reads and writes storage</td><td>repository</td><td>repositories</td><td>(none - stateless)</td></tr>
+  <tr class="alt"><td>Data shapes</td><td>Input and output structures</td><td>model, dto</td><td>plain objects</td><td>schemas</td></tr>
+</table>
+
+<h2>2.4 Cross-cutting design points</h2>
+<ul>
+  <li><b>CORS:</b> every service accepts browser calls only from <span class="code">http://localhost:5173</span>.</li>
+  <li><b>Errors:</b> services return consistent JSON errors with meaningful status codes (400 invalid input, 401 not signed in, 403 not allowed, 404 not found, 409 conflict, 413 too large, 429 too many attempts, 502 another service failed, 503 service unavailable).</li>
+  <li><b>Sign-in:</b> employee-service owns the accounts and issues the token, a signed JWT (HS256) carrying the user's id, e-mail, role and an expiry. The other two services keep no accounts and do not call employee-service to check a token: each verifies the signature, expiry, issuer and audience itself with a secret (<span class="code">JWT_SECRET</span>) that all three share. The caller's own token is passed on when one service reads data from another.</li>
+  <li><b>Secrets:</b> <span class="code">JWT_SECRET</span> (at least 32 characters, identical in all three services) lives in each service's git-ignored <span class="code">.env</span>. Each service refuses to start without it.</li>
+  <li><b>Secrets:</b> API keys and cloud settings live in git-ignored <span class="code">.env</span> files, never in source code.</li>
+  <li><b>Graceful degradation:</b> without AWS the photo feature switches off and the app still works; if OpenAI is unreachable the review falls back to the fixed rules.</li>
+</ul>
+
+<!-- ===================== 3. SYSTEM FLOW ===================== -->
+<h1>3. System Flow</h1>
+
+<h2>3.0 Sign in, sign up and reset a password</h2>
+<ol>
+  <li>When the application opens without a valid token, the user sees the sign-in screen, with links to <i>Sign up</i> and <i>Forgot password?</i>.</li>
+  <li><b>Sign in:</b> the browser checks the fields and sends <span class="code">POST /api/auth/login</span> to employee-service. The service looks up the account and compares the password with its stored hash. A wrong e-mail and a wrong password give the same message, and both are counted; the fifth failure locks that e-mail for 15 minutes.</li>
+  <li>On success the service returns a <b>JWT</b> valid for 60 minutes, plus the user and role. A JWT has three dot-separated parts: a header, a payload (user id, e-mail, role, expiry, issuer, audience) and a signature made with the shared secret. The payload can be read by anyone but cannot be changed without breaking the signature. Nothing about the token is stored on the server. The browser keeps it in session storage and sends it as <span class="code">Authorization: Bearer ...</span> on every later request.</li>
+  <li><b>Sign up:</b> an e-mail ending in <span class="code">@pwc.com</span> and a password of 8 to 100 characters create a <i>member</i> account and sign the user in. Nobody can sign up as an admin. The first administrator, <span class="code">vance.albert.reyes@pwc.com</span>, is created when employee-service starts.</li>
+  <li><b>Forgot password:</b> the user enters an e-mail. The service always answers the same message, whether or not the account exists. If it exists, a one-time 6-digit code valid for 15 minutes is created. There is no e-mail service, so the code is written to the employee-service log.</li>
+  <li><b>Reset password:</b> the user enters the e-mail, the code and a new password (8 to 100 characters). Wrong codes are counted toward the same lock-out. On success the new password is saved and the code is deleted. Tokens already issued are not cancelled (see the limitations); they stop working when they expire.</li>
+  <li>On every request, each service verifies the token's signature and expiry itself. A missing, forged, tampered or expired token gives <b>401</b> and the browser returns to the sign-in screen. A valid member token on an admin-only action gives <b>403</b>.</li>
+  <li><b>Sign out</b> only makes the browser forget the token. Because the token is not stored on the server, it cannot be cancelled and stays valid until its 60 minutes are up.</li>
+</ol>
+<table>
+  <tr><th style="width:34%">Action</th><th>admin</th><th>member</th></tr>
+  <tr><td>View employees and payroll history; export a run</td><td>Yes</td><td>Yes</td></tr>
+  <tr class="alt"><td>AI review and chat assistant</td><td>Yes</td><td>Yes</td></tr>
+  <tr><td>Add or delete an employee</td><td>Yes</td><td>No (403)</td></tr>
+  <tr class="alt"><td>Run payroll</td><td>Yes</td><td>No (403)</td></tr>
+  <tr><td>Upload or delete a photo</td><td>Yes</td><td>No (403)</td></tr>
+  <tr class="alt"><td>AWS status check</td><td>Yes</td><td>No (403)</td></tr>
+</table>
+
+<h2>3.1 Add an employee</h2>
+<ol>
+  <li>The administrator fills in the form (name, position, e-mail, contact number, salary) and submits.</li>
+  <li>The browser sends <span class="code">POST /api/employees</span> with the token to employee-service, which first checks the token (401) and the admin role (403).</li>
+  <li>Before sending, the form checks the same rules and shows a message under each field that has a problem, all at once.</li>
+  <li>On the server, annotations on the request object (<span class="code">CreateEmployee</span>) check the format of each field. The service layer then adds the rules that need other data: the position is allowed, the e-mail is not already used, and the salary fits the position's range.</li>
+  <li>If anything is wrong, the service responds <b>400</b> with a message for every problem field (<span class="code">fieldErrors</span>), which the form shows under the matching inputs.</li>
+  <li>If valid, the e-mail is lower-cased and the repository inserts the row. The database assigns the <span class="code">id</span> and the next employee code (for example <span class="code">EMP011</span>). If two identical e-mails arrive at the same instant, the database's unique rule rejects the second with <b>409</b>.</li>
+  <li>The saved employee is returned with <b>201 Created</b> and the directory refreshes.</li>
+</ol>
+<p><b>Validation rules.</b></p>
+<table>
+  <tr><th>Field</th><th>Rule</th></tr>
+  <tr><td>Full name</td><td>2 to 160 characters. Letters and spaces only. A period is allowed only in a final <i>Jr.</i> or <i>Sr.</i> (so "Dani Flores Jr." is valid; "R2D2", "Mary-Ann" and "Dani. Flores" are not).</td></tr>
+  <tr class="alt"><td>Position</td><td>Associate, Senior Associate or Manager.</td></tr>
+  <tr><td>E-mail</td><td>Company address ending in <span class="code">@pwc.com</span>, at most 254 characters. <b>Must be unique:</b> no two employees can share an e-mail, and capital letters make no difference.</td></tr>
+  <tr class="alt"><td>Contact number</td><td><span class="code">+63</span> followed by exactly 10 digits.</td></tr>
+  <tr><td>Monthly salary</td><td>Greater than 0, with <b>at most 2 decimal places</b>, and within the range for the position (below).</td></tr>
+</table>
+<p>Salary must fall within the range for the position:</p>
+<table>
+  <tr><th>Position</th><th>Allowed monthly salary (PHP)</th></tr>
+  <tr><td>Associate</td><td>20,000 to 60,000</td></tr>
+  <tr class="alt"><td>Senior Associate</td><td>60,001 to 100,000</td></tr>
+  <tr><td>Manager</td><td>100,001 and above</td></tr>
+</table>
+
+<h2>3.2 Run payroll</h2>
+<ol>
+  <li>The user selects an employee, a month, overtime hours and any other deductions, then clicks <i>Calculate payroll</i>.</li>
+  <li>The browser sends <span class="code">POST /api/payroll/run</span> with the token to payroll-service, which verifies the token itself and requires the admin role (401 or 403).</li>
+  <li>payroll-service validates the input (positive employee id, <span class="code">YYYY-MM</span> period, overtime 0-100 hours, non-negative deductions).</li>
+  <li>It calls employee-service (<span class="code">GET /api/employees/{id}</span>), passing the same token, to read the employee's name, code and salary.</li>
+  <li>It calculates gross pay, contributions, taxable income, withholding tax, total deductions and net pay (see 3.2.1).</li>
+  <li>It saves the run to <span class="code">payroll-runs.json</span> inside a one-at-a-time write queue. If a run already exists for the same employee and month, it responds <b>409 Conflict</b>.</li>
+  <li>The browser shows an itemised pay breakdown, and the run appears in the payroll history, where it can be viewed as a payslip or downloaded.</li>
+</ol>
+
+<h3>3.2.1 How pay is calculated</h3>
+<table>
+  <tr><th style="width:30%">Step</th><th>Rule</th></tr>
+  <tr><td>Hourly rate</td><td>Monthly salary / 160 working hours</td></tr>
+  <tr class="alt"><td>Overtime pay</td><td>Hourly rate x 1.25 x overtime hours</td></tr>
+  <tr><td>Gross pay</td><td>Salary + overtime pay</td></tr>
+  <tr class="alt"><td>Contributions</td><td>SSS, PhilHealth and Pag-IBIG, each calculated from the basic salary using its rate and limits</td></tr>
+  <tr><td>Taxable income</td><td>Gross pay - total contributions</td></tr>
+  <tr class="alt"><td>Withholding tax</td><td>BIR monthly graduated brackets applied to taxable income</td></tr>
+  <tr><td>Total deductions</td><td>Contributions + withholding tax + other deductions entered by the user</td></tr>
+  <tr class="alt"><td>Net pay</td><td>Gross pay - total deductions</td></tr>
+</table>
+<p><b>Worked example</b> (salary 30,000, 8 overtime hours, no other deductions): overtime 1,875.00; gross 31,875.00; SSS 1,500.00; PhilHealth 750.00; Pag-IBIG 200.00; taxable income 29,425.00; withholding tax 1,288.80; total deductions 3,738.80; <b>net pay 28,136.20</b>.</p>
+<div class="warn"><b>Note:</b> the contribution rates and tax brackets are demonstration values written from general knowledge. They change over time and must be confirmed against the official SSS, PhilHealth, Pag-IBIG and BIR tables before any real use.</div>
+
+<h2>3.3 Upload an employee photo</h2>
+<ol>
+  <li>The user clicks the camera button on an employee row and picks an image (JPEG, PNG or WebP, up to 2 MB).</li>
+  <li>The browser sends the raw file bytes and the token to <span class="code">PUT /api/employee-images/{employeeId}</span> on payroll-service. Only administrators see the camera button, and the service rejects members with 403 before it reads the upload.</li>
+  <li>payroll-service checks the employee id, confirms AWS is enabled, and identifies the true file type from the first bytes of the file (the declared type is ignored).</li>
+  <li>It confirms the employee exists by asking employee-service.</li>
+  <li>It stores the file in a private S3 bucket under <span class="code">employees/{id}/photo</span>.</li>
+  <li>The page lists photos with <span class="code">GET /api/employee-images</span>, which returns signed links valid for five minutes. The photo replaces the initials in the employee's avatar.</li>
+</ol>
+
+<h2>3.4 AI review of payroll history</h2>
+<ol>
+  <li>The user clicks <i>Analyze payroll history</i>.</li>
+  <li>The browser loads the saved runs and sends them, with the user's token, to ai-service (<span class="code">POST /api/ai/analyze</span>). ai-service verifies the token itself first. Any signed-in user may run the review.</li>
+  <li>ai-service validates the numbers, then applies three fixed rules: overtime above 24 hours; deductions above 20% of gross pay; gross minus deductions not equal to net pay.</li>
+  <li>In parallel it sends the six pay figures of each record (no names) to OpenAI in batches of 50 and receives, for each record, a flag and a short reason in a fixed JSON format.</li>
+  <li>A record is marked <b>review</b> if OpenAI flagged it or any rule fired; otherwise <b>normal</b>.</li>
+  <li>If OpenAI cannot be reached, the response still returns the rule results and states that the AI check was unavailable.</li>
+</ol>
+
+<h2>3.5 Chat assistant</h2>
+<ol>
+  <li>The user opens the chat button (lower right of the screen) and asks a question.</li>
+  <li>The browser sends the conversation and the user's token to <span class="code">POST /api/ai/chat</span>. ai-service checks the token first.</li>
+  <li>ai-service itself fetches the current employees and payroll runs from the other two services, using the user's own token (so the chat sees only what that user may see), and pre-computes counts and totals in code.</li>
+  <li>It sends OpenAI the instructions, the data and the conversation. The instructions require answers only from that data, a fixed "I can't find that in the payroll data" reply when the answer is missing, and refusal of unrelated questions.</li>
+  <li>The answer is returned to the chat window.</li>
+</ol>
+<div class="note">Because ai-service fetches the data itself, the browser cannot supply or alter it. The restriction to on-topic answers is enforced by the model instructions rather than by code, so it should be tested with off-topic questions before relying on it.</div>
+
+<!-- ===================== 4. MICROSERVICES ===================== -->
+<h1>4. The Microservices</h1>
+<p>The application contains three backend microservices. The React front end is the fourth deployable component.</p>
+
+<table>
+  <tr><th style="width:17%">Service</th><th style="width:15%">Technology</th><th style="width:8%">Port</th><th>What it does</th><th style="width:20%">Owns / stores</th></tr>
+  <tr>
+    <td><b>employee-service</b></td><td>Java 21, Spring Boot 4.1.1</td><td>8081</td>
+    <td>Source of truth for employee records. Creates, lists, retrieves and deletes employees, validating every field (including unique e-mail addresses) and generating employee codes. Also the <b>sign-in service</b>: owns user accounts, passwords (salted hashes) and password-reset codes, and issues the signed JWT tokens that the other services verify.</td>
+    <td>Employee, user and reset-code tables in an in-memory H2 database</td>
+  </tr>
+  <tr class="alt">
+    <td><b>payroll-service</b></td><td>Node.js, Express 5</td><td>3001</td>
+    <td>Runs payroll with Philippine deductions, keeps payroll history, exports a run as CSV, manages employee photos in S3, and reports AWS connection status.</td>
+    <td>Payroll runs (JSON file); photos (AWS S3)</td>
+  </tr>
+  <tr>
+    <td><b>ai-service</b></td><td>Python, FastAPI, OpenAI SDK</td><td>8000</td>
+    <td>Reviews payroll records with fixed rules plus OpenAI, and answers chat questions from live employee and payroll data.</td>
+    <td>Nothing (stateless)</td>
+  </tr>
+  <tr class="alt">
+    <td><b>frontend</b></td><td>React 19, Vite 8</td><td>5173</td>
+    <td>The user interface: sign in, sign up and forgot-password screens, employee directory, payroll form and history, payslip viewer, AI review results and the chat widget. Controls that need an admin are hidden from members.</td>
+    <td>Nothing (the sign-in token is kept in browser session storage and cleared when the tab closes)</td>
+  </tr>
+</table>
+
+<h2>4.1 Why separate services?</h2>
+<ul>
+  <li><b>Single responsibility:</b> each service can be understood, changed and tested on its own.</li>
+  <li><b>Independent change:</b> payroll rules, the employee database and the AI provider can each change without touching the others.</li>
+  <li><b>Fault isolation:</b> if the AI service is down, employees and payroll still work; if AWS is off, only photos are affected.</li>
+  <li><b>Technology fit:</b> Java for a validated data service, Node.js for I/O and cloud integration, Python for the AI ecosystem.</li>
+</ul>
+
+<!-- ===================== 5. ROLES AND RESPONSIBILITIES ===================== -->
+<h1>5. Roles and Responsibilities of Each Component</h1>
+
+<h2>5.1 Front end (React)</h2>
+<table>
+  <tr><td class="label">Role</td><td>The only part users see. Collects input, calls the three services directly and presents results.</td></tr>
+  <tr><td class="label">Responsibilities</td><td>
+    <ul>
+      <li>Sign in, sign up and forgot-password / reset screens. Keeps the sign-in token in session storage, sends it with every request, and returns to the sign-in screen when the session ends.</li>
+      <li>Shows or hides controls by role: members see a read-only view with a short explanation; admins also see the add-employee and run-payroll forms, the photo and delete buttons, and the AWS status button.</li>
+      <li>Employee directory: list, add (with input hints), delete (with a confirmation pop-up), upload or change a photo.</li>
+      <li>Payroll form and an itemised pay breakdown after calculation.</li>
+      <li>Payroll history with a payslip viewer and JSON download.</li>
+      <li>Buttons for AI review and AWS status, and the chat widget.</li>
+    </ul></td></tr>
+  <tr><td class="label">Does not</td><td>Store business data, hold secrets, or act as the security boundary. Hiding a button is only a convenience; each service enforces the rules itself.</td></tr>
+</table>
+
+<h2>5.2 employee-service</h2>
+<table>
+  <tr><th style="width:26%">Component</th><th>Responsibility</th></tr>
+  <tr><td><span class="code">EmployeeController</span></td><td>Exposes the REST endpoints, converts JSON to objects, chooses status codes (200, 201, 204, 400, 404, 409).</td></tr>
+  <tr class="alt"><td><span class="code">AuthController</span> / <span class="code">AuthService</span></td><td>Sign-up (always creates a member), login, forgot-password and reset-password under <span class="code">/api/auth</span>. Passwords checked against salted hashes; a signed JWT issued on success; one-time 6-digit reset codes; five failed attempts lock an e-mail for 15 minutes.</td></tr>
+  <tr><td><span class="code">JwtService</span></td><td>Creates and checks the JWT (HS256). The token carries the user id, e-mail, role, issuer, audience and a 60-minute expiry. Checking rejects forged, tampered, expired, wrong-issuer, wrong-audience and unsigned tokens, and accepts only HS256. Refuses to start if <span class="code">JWT_SECRET</span> is missing or shorter than 32 characters.</td></tr>
+  <tr><td><span class="code">AuthInterceptor</span> / <span class="code">WebConfig</span></td><td>The doorman for <span class="code">/api/employees</span>: no valid token gives 401; adding or deleting without the admin role gives 403.</td></tr>
+  <tr class="alt"><td><span class="code">PasswordHasher</span>, <span class="code">AttemptTracker</span>, <span class="code">AuthRepository</span>, <span class="code">AdminSeeder</span></td><td>Password hashing (PBKDF2-HMAC-SHA512); failed-attempt counting; SQL for users and reset codes; creation of the first administrator at startup.</td></tr>
+  <tr class="alt"><td><span class="code">EmployeeService</span></td><td>Business rules that need other data: allowed positions, duplicate e-mail check, salary range per position. Merges them with the format errors from the request object and returns one message per field. Lower-cases the e-mail before saving.</td></tr>
+  <tr><td><span class="code">EmployeeRepository</span></td><td>The only class that runs SQL. Uses bound parameters to prevent SQL injection and returns generated keys.</td></tr>
+  <tr class="alt"><td><span class="code">Employee</span> / <span class="code">CreateEmployee</span></td><td>Output and input data shapes. The input shape deliberately has no id or code, so clients cannot choose them. <span class="code">CreateEmployee</span> also carries the format validation as annotations (required, length, name, e-mail and phone patterns, salary above 0 with at most 2 decimals) and trims the text fields.</td></tr>
+  <tr><td><span class="code">schema.sql</span> / <span class="code">data.sql</span></td><td>Create the employee, user and reset-code tables with database-level checks as a second line of defence (including a unique, lower-case e-mail and a role limited to admin or member), and load 10 sample employees.</td></tr>
+  <tr class="alt"><td><span class="code">application.properties</span></td><td>Port, database connection and SQL start-up settings. The H2 web console is switched off because it has no login and would expose the users table.</td></tr>
+</table>
+
+<h2>5.3 payroll-service</h2>
+<table>
+  <tr><th style="width:26%">Component</th><th>Responsibility</th></tr>
+  <tr><td><span class="code">middleware/auth.js</span></td><td>The doorman. <span class="code">requireUser</span> sits in front of everything under <span class="code">/api</span>: it reads the bearer token and verifies the JWT locally with the shared secret, accepting only HS256 and checking expiry, issuer and audience (401 if anything is wrong; no call to employee-service). <span class="code">requireAdmin</span> is added to running payroll, photo upload and delete, and the AWS identity check (403 for members). The user's token is kept on the request so it can be passed on.</td></tr>
+  <tr class="alt"><td><span class="code">routes/</span></td><td>Map URLs and methods to controller functions; the photo route reads raw bytes with a 2 MB limit.</td></tr>
+  <tr class="alt"><td><span class="code">controllers/</span></td><td>Translate service results and errors into HTTP responses.</td></tr>
+  <tr><td><span class="code">payroll.service</span></td><td>Validates a run, fetches the salary, calculates pay, builds the saved record, builds the CSV export.</td></tr>
+  <tr class="alt"><td><span class="code">ph-deductions</span></td><td>SSS, PhilHealth, Pag-IBIG and withholding tax rules, kept in one file so rate changes touch one place.</td></tr>
+  <tr><td><span class="code">employee.client</span></td><td>The single place that looks up an employee. Forwards the caller's own token, because employee-service now refuses unsigned requests.</td></tr>
+  <tr class="alt"><td><span class="code">image.service</span></td><td>Photo rules: id check, real file-type detection from the file's first bytes, employee must exist, availability checks.</td></tr>
+  <tr><td><span class="code">aws.service</span></td><td>AWS identity check with the account number and role names masked.</td></tr>
+  <tr class="alt"><td><span class="code">payroll.repository</span></td><td>Reads and writes the JSON file safely (temporary file then rename) and serialises writes through a queue.</td></tr>
+  <tr><td><span class="code">image.repository</span></td><td>All S3 calls: upload, delete, list (paged) and create expiring signed URLs.</td></tr>
+  <tr class="alt"><td><span class="code">config/</span>, <span class="code">middleware/</span>, <span class="code">utils/</span></td><td>Central settings from <span class="code">.env</span>; last-resort error handler that hides internals; an error type that carries an HTTP status.</td></tr>
+</table>
+
+<h2>5.4 ai-service</h2>
+<table>
+  <tr><th style="width:26%">Component</th><th>Responsibility</th></tr>
+  <tr><td><span class="code">core/auth</span></td><td>The doorman: a dependency that reads the bearer token and verifies the JWT locally with PyJWT (HS256 only; expiry, subject, issuer and audience required; 401 if anything is wrong; no call to employee-service). Applied to review and chat; any signed-in user may use them. The chat passes the same token on when it loads data.</td></tr>
+  <tr class="alt"><td><span class="code">api/</span></td><td>Health, analyze and chat endpoints; turns invalid input into a single clear 400.</td></tr>
+  <tr class="alt"><td><span class="code">schemas/</span></td><td>Pydantic models that check payroll records and chat messages (only <i>user</i> and <i>assistant</i> roles are accepted).</td></tr>
+  <tr><td><span class="code">services/analysis</span></td><td>Applies the three fixed rules and combines them with the OpenAI result into a final status.</td></tr>
+  <tr class="alt"><td><span class="code">services/openai_review</span></td><td>Sends records in batches and forces a structured JSON reply; logs only error types, never message text that could contain the key.</td></tr>
+  <tr><td><span class="code">services/openai_client</span></td><td>One shared OpenAI connection, created on first use.</td></tr>
+  <tr class="alt"><td><span class="code">services/data_source</span></td><td>Fetches live employees and payroll runs using the user's own token, keeps only needed fields, pre-computes totals, tolerates one source being down.</td></tr>
+  <tr><td><span class="code">services/chat</span></td><td>Builds the conversation (rules, data, history), calls OpenAI with <span class="code">temperature=0</span>, maps failures to 502 or 503.</td></tr>
+  <tr class="alt"><td><span class="code">core/config</span></td><td>Reads the key and model from <span class="code">.env</span>; holds limits (batch size, chat length, timeouts).</td></tr>
+</table>
+
+<h2>5.5 External services</h2>
+<table>
+  <tr><th style="width:26%">Service</th><th>Role</th></tr>
+  <tr><td>AWS S3</td><td>Private object storage for employee photos. Accessed only by payroll-service; users see expiring signed links.</td></tr>
+  <tr class="alt"><td>AWS STS</td><td>Answers "who am I?" for the AWS status check.</td></tr>
+  <tr><td>OpenAI API</td><td>Language model (default <span class="code">gpt-4o-mini</span>) used for payroll review and the chat assistant.</td></tr>
+</table>
+
+<!-- ===================== 6. TECHNICAL STACK ===================== -->
+<h1>6. Technical Stack</h1>
+
+<table>
+  <tr><th style="width:18%">Layer</th><th style="width:30%">Technology</th><th>Used for</th></tr>
+  <tr><td rowspan="4"><b>Front end</b></td><td>React 19</td><td>Component-based user interface</td></tr>
+  <tr class="alt"><td>Vite 8</td><td>Development server and production build</td></tr>
+  <tr><td>JavaScript (JSX), plain CSS</td><td>Application code and styling</td></tr>
+  <tr class="alt"><td>ESLint 10</td><td>Code quality checks</td></tr>
+
+  <tr><td rowspan="8"><b>employee-service</b></td><td>Java 21</td><td>Language</td></tr>
+  <tr class="alt"><td>Spring Boot 4.1.1 (Spring Web MVC)</td><td>REST API and application framework</td></tr>
+  <tr><td>Spring JDBC (<span class="code">JdbcTemplate</span>)</td><td>SQL access</td></tr>
+  <tr class="alt"><td>H2 database (in memory)</td><td>Storage for employees, users and reset codes (web console switched off)</td></tr>
+  <tr><td>Bean Validation (<span class="code">spring-boot-starter-validation</span>)</td><td>Format rules written as annotations on request objects</td></tr>
+  <tr class="alt"><td>Nimbus JOSE + JWT (<span class="code">nimbus-jose-jwt</span>)</td><td>Creating and verifying the signed JWT tokens (HS256)</td></tr>
+  <tr><td>JDK cryptography (PBKDF2-HMAC-SHA512, SHA-256, SecureRandom)</td><td>Password hashing and reset codes</td></tr>
+  <tr><td>Maven (wrapper included)</td><td>Build and dependency management</td></tr>
+
+  <tr class="alt"><td rowspan="6"><b>payroll-service</b></td><td>Node.js (built-in <span class="code">fetch</span>)</td><td>Runtime and calls to employee-service</td></tr>
+  <tr class="alt"><td>Express 5, cors</td><td>HTTP server, routing, CORS</td></tr>
+  <tr class="alt"><td>dotenv</td><td>Loads <span class="code">.env</span> settings</td></tr>
+  <tr class="alt"><td>jsonwebtoken</td><td>Verifying the JWT tokens locally (HS256)</td></tr>
+  <tr class="alt"><td>AWS SDK v3: client-s3, s3-request-presigner, client-sts</td><td>Photo storage, signed URLs, identity check</td></tr>
+  <tr class="alt"><td>JSON file</td><td>Payroll history storage</td></tr>
+
+  <tr><td rowspan="7"><b>ai-service</b></td><td>Python 3.11 / 3.12</td><td>Language</td></tr>
+  <tr class="alt"><td>FastAPI + Uvicorn</td><td>API framework and server (auto-generated docs at <span class="code">/docs</span>)</td></tr>
+  <tr><td>Pydantic v2</td><td>Input validation</td></tr>
+  <tr class="alt"><td>OpenAI Python SDK</td><td>Review and chat calls (<span class="code">gpt-4o-mini</span> by default)</td></tr>
+  <tr><td>httpx</td><td>Fetching live data from the other services</td></tr>
+  <tr class="alt"><td>python-dotenv</td><td>Loads <span class="code">.env</span> settings</td></tr>
+  <tr><td>PyJWT</td><td>Verifying the JWT tokens locally (HS256)</td></tr>
+
+  <tr><td rowspan="3"><b>Cloud</b></td><td>AWS S3</td><td>Private photo storage</td></tr>
+  <tr class="alt"><td>AWS STS</td><td>Identity check</td></tr>
+  <tr><td>OpenAI API</td><td>AI review and chat</td></tr>
+
+  <tr class="alt"><td rowspan="3"><b>Communication</b></td><td>REST over HTTP, JSON</td><td>All service-to-service and browser-to-service traffic</td></tr>
+  <tr class="alt"><td>CORS allow-list</td><td>Limits browser calls to <span class="code">http://localhost:5173</span></td></tr>
+  <tr class="alt"><td>Signed URLs</td><td>Time-limited access to private photos</td></tr>
+</table>
+
+<h2>6.1 Ports and run commands</h2>
+<table>
+  <tr><th>Component</th><th>Port</th><th>Start command</th></tr>
+  <tr><td>employee-service</td><td>8081</td><td><span class="code">mvn spring-boot:run</span> (in <span class="code">employee-service</span>)</td></tr>
+  <tr class="alt"><td>payroll-service</td><td>3001</td><td><span class="code">node server.js</span> (in <span class="code">payroll-service</span>)</td></tr>
+  <tr><td>ai-service</td><td>8000</td><td><span class="code">python -m uvicorn app.main:app --port 8000</span> (in <span class="code">ai-service</span>, virtual environment active)</td></tr>
+  <tr class="alt"><td>frontend</td><td>5173</td><td><span class="code">npm run dev</span> (in <span class="code">frontend</span>)</td></tr>
+</table>
+
+<h2>6.2 Configuration</h2>
+<table>
+  <tr><th>File</th><th>Key settings</th></tr>
+  <tr><td><span class="code">payroll-service/.env</span></td><td><span class="code">PORT</span>, <span class="code">EMPLOYEE_SERVICE_URL</span>, <span class="code">AWS_ENABLED</span>, <span class="code">AWS_REGION</span>, <span class="code">AWS_S3_BUCKET</span>. AWS credentials come from the AWS credentials file, not from <span class="code">.env</span>.</td></tr>
+  <tr class="alt"><td><span class="code">ai-service/.env</span></td><td><span class="code">OPENAI_API_KEY</span>, <span class="code">OPENAI_MODEL</span>, optional <span class="code">EMPLOYEE_SERVICE_URL</span> and <span class="code">PAYROLL_SERVICE_URL</span>.</td></tr>
+  <tr><td><span class="code">employee-service/src/main/resources/application.properties</span></td><td>Port, in-memory database URL, SQL initialisation, H2 console.</td></tr>
+</table>
+
+<!-- ===================== 7. SCOPE ===================== -->
+<h1>7. Scope of the Application</h1>
+
+<h2>7.1 In scope</h2>
+<table>
+  <tr><th style="width:28%">Area</th><th>Included</th></tr>
+  <tr><td>Employee management</td><td>List, add and delete employees; validation of name, position, company e-mail, +63 contact number and salary (2 decimals, range per position); unique e-mail addresses; all errors shown at once, each under its field; generated employee codes; sample data.</td></tr>
+  <tr class="alt"><td>Payroll processing</td><td>Monthly payroll run per employee with overtime, SSS, PhilHealth, Pag-IBIG, BIR withholding tax and other deductions; one run per employee per month; saved history.</td></tr>
+  <tr><td>Payslips and exports</td><td>On-screen itemised breakdown, payslip viewer, JSON download in the app, and a CSV export endpoint.</td></tr>
+  <tr class="alt"><td>Employee photos</td><td>Upload, replace, display and delete in a private S3 bucket with expiring links.</td></tr>
+  <tr><td>AI review</td><td>Fixed rules plus OpenAI review of payroll records with a reason for each.</td></tr>
+  <tr class="alt"><td>AI chat</td><td>A chat assistant limited by instruction to answering from current employee and payroll data.</td></tr>
+  <tr><td>Sign-in and access control</td><td>Sign in, sign up, forgot and reset password; accounts with the roles <i>admin</i> and <i>member</i>; signed JWT tokens valid for 60 minutes, verified by each service on its own; admins manage employees, payroll and photos while members have read-only access plus AI review and chat; five failed attempts lock an account for 15 minutes; checked by all three services. A first administrator is created at start-up.</td></tr>
+  <tr class="alt"><td>User interface</td><td>Web app with sign-in screens, directory, payroll form, history, payslip viewer and chat widget, with controls shown according to role.</td></tr>
+  <tr class="alt"><td>Operations</td><td>Health endpoints, AWS status check, and clear startup messages showing AWS and key configuration.</td></tr>
+</table>
+
+<h2>7.2 Out of scope (not built)</h2>
+<ul>
+  <li>Persistent user accounts (accounts live in memory and are lost on restart), e-mail confirmation at sign-up, sending the reset code by e-mail, changing a password while signed in, an admin screen to manage users or change roles, and an external identity provider.</li>
+  <li>HTTPS (traffic is plain HTTP on the local machine).</li>
+  <li>Editing an existing employee; a persistent employee database.</li>
+  <li>Attendance, leave, loans, 13th-month pay, holiday or night-differential pay, and semi-monthly pay periods.</li>
+  <li>Bulk payroll for all employees at once, approval workflows, and bank payment files.</li>
+  <li>Official government forms and reports (BIR, SSS, PhilHealth, Pag-IBIG).</li>
+  <li>PDF payslips and e-mail delivery.</li>
+  <li>Production deployment, containers, monitoring and automated build pipelines.</li>
+  <li>Automated test suites beyond a single application start-up test.</li>
+</ul>
+
+<!-- ===================== 8. FUTURE ENHANCEMENTS ===================== -->
+<h1>8. Future Enhancements</h1>
+<p>Grouped by area. Priority reflects the value gained relative to the effort and risk of leaving the gap open.</p>
+
+<table>
+  <tr><th style="width:15%">Area</th><th>Enhancement</th><th>Benefit</th><th style="width:10%">Priority</th></tr>
+  <tr><td rowspan="8"><b>Security</b></td><td>Keep users in the persistent database; require a strong password for the seeded administrator (it is currently the short password <span class="code">admin</span>).</td><td>Accounts survive restarts; no weak default credential.</td><td>High</td></tr>
+  <tr class="alt"><td>HTTPS everywhere and a secrets manager for the JWT secret, API keys and credentials.</td><td>Tokens and passwords protected in transit; no secrets in files.</td><td>High</td></tr>
+  <tr><td>Make tokens cancellable: keep a short list of revoked tokens that every service checks, or use a much shorter lifetime with refresh tokens.</td><td>Sign-out, password reset and role changes take effect at once instead of when the token expires.</td><td>High</td></tr>
+  <tr class="alt"><td>Move from one shared secret to asymmetric signing (RS256/ES256): employee-service keeps a private key and publishes the public key; the other services verify with the public key only.</td><td>The other services can no longer forge tokens even if one of them is compromised; secrets are not copied between services.</td><td>Medium</td></tr>
+  <tr><td>Send reset codes by e-mail (today the code is written to the server log) and confirm e-mail addresses at sign-up.</td><td>A usable reset flow; stops anyone creating an account with an address they do not own.</td><td>High</td></tr>
+  <tr class="alt"><td>An admin screen to manage users and roles; change password while signed in; optional move to an external identity provider (OIDC) with signed tokens.</td><td>Complete account management; sign-in no longer depends on one service being up.</td><td>Medium</td></tr>
+  <tr><td>Rate limiting and usage caps on the AI endpoints.</td><td>Controls OpenAI cost and abuse.</td><td>Medium</td></tr>
+  <tr class="alt"><td>Audit log of who created, changed or deleted records.</td><td>Accountability for payroll data.</td><td>Medium</td></tr>
+
+  <tr><td rowspan="4"><b>Data</b></td><td>Replace H2 with a persistent database such as PostgreSQL, with managed migrations.</td><td>Employee data survives restarts; stable IDs.</td><td>High</td></tr>
+  <tr class="alt"><td>Move payroll history from a JSON file to the database.</td><td>Safe concurrent access, queries, multi-instance deployment.</td><td>High</td></tr>
+  <tr><td>Stable employee identity that photos and payroll runs reference; soft delete. (A unique e-mail constraint already exists.)</td><td>Removes the risk of old runs or photos pointing to the wrong person.</td><td>High</td></tr>
+  <tr class="alt"><td>Make SSS, PhilHealth, Pag-IBIG and tax tables configurable with effective dates.</td><td>Rate changes without code changes; correct history.</td><td>High</td></tr>
+
+  <tr><td rowspan="5"><b>Payroll features</b></td><td>Edit employee records.</td><td>Complete employee management.</td><td>Medium</td></tr>
+  <tr class="alt"><td>Run payroll for all employees at once, with an approval step.</td><td>Matches how payroll is actually run.</td><td>Medium</td></tr>
+  <tr><td>13th-month pay, holiday and night differentials, leave and attendance integration, semi-monthly periods.</td><td>Covers Philippine payroll practice more fully.</td><td>Medium</td></tr>
+  <tr class="alt"><td>PDF payslips, e-mail delivery, and government remittance reports.</td><td>Deliverables employees and agencies expect.</td><td>Medium</td></tr>
+  <tr><td>Payroll history filters, search and CSV download from the UI.</td><td>Easier reporting.</td><td>Low</td></tr>
+
+  <tr class="alt"><td rowspan="4"><b>AI</b></td><td>Automated tests that confirm the chat refuses off-topic and prompt-injection questions.</td><td>Evidence that the data-only rule holds.</td><td>High</td></tr>
+  <tr class="alt"><td>Redact personal details before sending to OpenAI, or offer a self-hosted or offline model option.</td><td>Better privacy for real employee data.</td><td>High</td></tr>
+  <tr class="alt"><td>Cite the records used in each chat answer; add retrieval for larger datasets.</td><td>Traceable answers that scale.</td><td>Medium</td></tr>
+  <tr class="alt"><td>Compare each employee with their own history; cache repeated reviews.</td><td>More meaningful flags, lower cost.</td><td>Low</td></tr>
+
+  <tr><td rowspan="5"><b>Quality and operations</b></td><td>Unit, integration and contract tests for all three services and the UI.</td><td>Safer changes; catches regressions.</td><td>High</td></tr>
+  <tr class="alt"><td>Docker Compose to start every component with one command.</td><td>Repeatable setup.</td><td>Medium</td></tr>
+  <tr><td>CI/CD pipeline running build, lint and tests.</td><td>Automatic quality gate.</td><td>Medium</td></tr>
+  <tr class="alt"><td>API gateway, centralised logging, health monitoring and OpenAPI documentation for all services.</td><td>Operational visibility and consistent docs.</td><td>Medium</td></tr>
+  <tr><td>Split the front end into components and services; adopt TypeScript; accessibility and mobile review.</td><td>Maintainability and usability.</td><td>Low</td></tr>
+</table>
+
+<!-- ===================== 9. ASSUMPTIONS AND LIMITATIONS ===================== -->
+<h1>9. Assumptions and Known Limitations</h1>
+<table>
+  <tr><th style="width:28%">Item</th><th>Detail</th></tr>
+  <tr><td>Employee data is in memory</td><td>employee-service resets to the 10 sample employees on every restart and employee IDs restart at 1. Payroll runs and S3 photos keep the old IDs, so they can end up referring to a different person.</td></tr>
+  <tr class="alt"><td>Accounts are in memory</td><td>Accounts created by sign-up and reset codes disappear when employee-service restarts. Only the seeded administrator (<span class="code">vance.albert.reyes@pwc.com</span>) is recreated. The lock-out counters are also in memory. A token issued before a restart still works until it expires, even if its account is gone.</td></tr>
+  <tr><td>Tokens cannot be cancelled</td><td>A JWT is not stored on the server, so signing out only clears the browser, and a password reset or role change does not affect tokens already issued. Each works until its 60 minutes are up, so a copied token can be used until then.</td></tr>
+  <tr class="alt"><td>One shared secret</td><td><span class="code">JWT_SECRET</span> signs and verifies every token and must be identical in all three services. Anyone who learns it can forge an admin token. Keep it out of source control (all three <span class="code">.env</span> files are git-ignored; the <span class="code">.env.example</span> files must stay empty) and change it if it leaks, which signs everyone out. If the values differ, sign-in succeeds but the other two services answer 401.</td></tr>
+  <tr><td>Weak seeded admin password</td><td>The administrator's starting password is <span class="code">admin</span>, shorter than the 8-character minimum required of new passwords. Change it before real use. A password reset requires at least 8 characters.</td></tr>
+  <tr class="alt"><td>Forgot password has no e-mail</td><td>The reset code is written to the employee-service log. Anyone who can read that log can reset a password. A real deployment must send it by e-mail.</td></tr>
+  <tr><td>Open sign-up</td><td>Anyone with a <span class="code">@pwc.com</span> address can create a member account, without e-mail confirmation. Members cannot change data.</td></tr>
+  <tr><td>Sign-in depends on employee-service</td><td>Nobody can sign in while it is down. Users who already hold a valid token can still use payroll-service and ai-service, because those verify tokens themselves; only calls that need employee data fail (502). Traffic is plain HTTP, so tokens could be read on a real network.</td></tr>
+  <tr><td>Statutory rates are demonstration values</td><td>SSS, PhilHealth, Pag-IBIG and BIR figures must be verified against official sources before real use.</td></tr>
+  <tr class="alt"><td>Data leaves the machine for AI</td><td>The review sends salary figures only. The chat also sends employee names, e-mail addresses, contact numbers and salaries to OpenAI. Confirm this is acceptable for the data being used.</td></tr>
+  <tr><td>Chat scope is instruction-based</td><td>The restriction to on-topic, data-only answers is enforced by model instructions, not code. It is strong with <span class="code">temperature=0</span> but not an absolute guarantee. The AI review is advisory; a person decides what to do with a flagged record.</td></tr>
+  <tr class="alt"><td>Review threshold interaction</td><td>Since tax and contributions are now part of deductions, higher salaries can exceed the "20% of gross" rule and be marked for review. The threshold may need raising.</td></tr>
+  <tr><td>Single-instance file storage</td><td>payroll-runs.json suits one running copy of payroll-service. Malformed JSON in a request currently produces a 500 rather than a 400.</td></tr>
+  <tr class="alt"><td>Testing status</td><td>The only automated test checks that employee-service starts. Features have been checked by hand by running the app (including the employee validation, unique e-mail and per-field errors), but there are no automated unit, API or UI tests, so changes need a manual regression pass before release.</td></tr>
+</table>
+
+<!-- ===================== APPENDIX ===================== -->
+<h1>Appendix A. API Endpoint Summary</h1>
+
+<p>Unless marked <i>open</i>, every endpoint needs the JWT from sign-in in the header <span class="code">Authorization: Bearer &lt;token&gt;</span>. <i>Admin</i> means the token's role claim must be admin (403 otherwise). A missing, forged, tampered or expired token gives 401.</p>
+
+<h2>employee-service (port 8081)</h2>
+<table>
+  <tr><th style="width:12%">Method</th><th style="width:30%">Path</th><th>Purpose</th><th style="width:12%">Access</th><th style="width:20%">Responses</th></tr>
+  <tr><td>GET</td><td><span class="code">/api/employees</span></td><td>List all employees</td><td>signed in</td><td>200, 401</td></tr>
+  <tr class="alt"><td>GET</td><td><span class="code">/api/employees/{id}</span></td><td>Get one employee</td><td>signed in</td><td>200, 401, 404</td></tr>
+  <tr><td>POST</td><td><span class="code">/api/employees</span></td><td>Add an employee</td><td>admin</td><td>201, 400, 401, 403, 409</td></tr>
+  <tr class="alt"><td>DELETE</td><td><span class="code">/api/employees/{id}</span></td><td>Delete an employee</td><td>admin</td><td>204, 401, 403, 404</td></tr>
+  <tr><td>POST</td><td><span class="code">/api/auth/signup</span></td><td>Create a member account and sign in</td><td>open</td><td>201, 400, 409</td></tr>
+  <tr class="alt"><td>POST</td><td><span class="code">/api/auth/login</span></td><td>Sign in; returns a JWT, its expiry and the user</td><td>open</td><td>200, 400, 401, 429</td></tr>
+  <tr><td>POST</td><td><span class="code">/api/auth/forgot-password</span></td><td>Create a reset code (written to the server log); same answer whether or not the account exists</td><td>open</td><td>200, 400</td></tr>
+  <tr class="alt"><td>POST</td><td><span class="code">/api/auth/reset-password</span></td><td>Set a new password with the reset code</td><td>open</td><td>200, 400, 429</td></tr>
+</table>
+
+<h2>payroll-service (port 3001)</h2>
+<table>
+  <tr><th style="width:12%">Method</th><th style="width:30%">Path</th><th>Purpose</th><th style="width:12%">Access</th><th style="width:20%">Responses</th></tr>
+  <tr><td>GET</td><td><span class="code">/health</span></td><td>Liveness check</td><td>open</td><td>200</td></tr>
+  <tr class="alt"><td>GET</td><td><span class="code">/api/payroll</span></td><td>List saved payroll runs</td><td>signed in</td><td>200, 401, 502</td></tr>
+  <tr><td>POST</td><td><span class="code">/api/payroll/run</span></td><td>Calculate and save a payroll run</td><td>admin</td><td>201, 400, 401, 403, 404, 409, 502</td></tr>
+  <tr class="alt"><td>GET</td><td><span class="code">/api/payroll/{id}/export</span></td><td>Download one run as CSV</td><td>signed in</td><td>200, 401, 404, 502</td></tr>
+  <tr><td>GET</td><td><span class="code">/api/aws/identity</span></td><td>AWS connection status (masked)</td><td>admin</td><td>200, 401, 403, 503</td></tr>
+  <tr class="alt"><td>GET</td><td><span class="code">/api/employee-images</span></td><td>Map of employee id to signed photo link</td><td>signed in</td><td>200, 401, 503</td></tr>
+  <tr><td>PUT</td><td><span class="code">/api/employee-images/{employeeId}</span></td><td>Upload or replace a photo</td><td>admin</td><td>200, 400, 401, 403, 404, 413, 502, 503</td></tr>
+  <tr class="alt"><td>DELETE</td><td><span class="code">/api/employee-images/{employeeId}</span></td><td>Delete a photo</td><td>admin</td><td>204, 400, 401, 403, 503</td></tr>
+</table>
+
+<h2>ai-service (port 8000)</h2>
+<table>
+  <tr><th style="width:12%">Method</th><th style="width:30%">Path</th><th>Purpose</th><th style="width:12%">Access</th><th style="width:20%">Responses</th></tr>
+  <tr><td>GET</td><td><span class="code">/health</span></td><td>Liveness; <span class="code">mode</span> is <i>openai</i> or <i>rules-only</i></td><td>open</td><td>200</td></tr>
+  <tr class="alt"><td>POST</td><td><span class="code">/api/ai/analyze</span></td><td>Review a list of payroll records</td><td>signed in</td><td>200, 400, 401, 422, 502</td></tr>
+  <tr><td>POST</td><td><span class="code">/api/ai/chat</span></td><td>Ask a question about employees and payroll</td><td>signed in</td><td>200, 400, 401, 422, 502, 503</td></tr>
+</table>
+
+</div>
+</body>
+</html>

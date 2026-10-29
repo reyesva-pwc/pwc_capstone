@@ -1,0 +1,10 @@
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP001', 'Ana Cruz', 'Associate', 'ana.cruz@pwc.com', '+639171234567', 30000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP002', 'Ben Santos', 'Senior Associate', 'ben.santos@pwc.com', '+639181234567', 75000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP003', 'Cara Reyes', 'Manager', 'cara.reyes@pwc.com', '+639191234567', 120000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP004', 'Dani Flores', 'Associate', 'dani.flores@pwc.com', '+639201234567', 28000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP005', 'Eli Tan', 'Associate', 'eli.tan@pwc.com', '+639211234567', 35000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP006', 'Fay Navarro', 'Senior Associate', 'fay.navarro@pwc.com', '+639221234567', 72000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP007', 'Gio Mendoza', 'Associate', 'gio.mendoza@pwc.com', '+639231234567', 45000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP008', 'Hana Villanueva', 'Senior Associate', 'hana.villanueva@pwc.com', '+639241234567', 88000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP009', 'Ivan Bautista', 'Manager', 'ivan.bautista@pwc.com', '+639251234567', 125000.00);
+INSERT INTO employees (employee_code, full_name, position, email_address, contact_number, base_salary) VALUES ('EMP010', 'Jade Ramos', 'Manager', 'jade.ramos@pwc.com', '+639261234567', 150000.00);
